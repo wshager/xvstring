@@ -1,0 +1,25 @@
+{
+  "name": "xvstring",
+  "version": "0.0.1",
+  "description": "String functions for XVNode",
+  "main": "./lib/xvstring",
+  "scripts": {
+    "test": "node test/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wshager/xvstring.git"
+  },
+  "author": "W.S. Hager",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/wshager/xvstring/issues"
+  },
+  "homepage": "https://github.com/wshager/xvstring#readme",
+  "dependencies": {
+    "xregexp": "^3.1.1",
+    "xvnode": "^0.1.0",
+    "xvseq": "^0.1.0",
+    "xvtype": "0.0.5"
+  }
+}
