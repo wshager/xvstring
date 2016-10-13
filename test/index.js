@@ -22,5 +22,5 @@ assertEq(str.codepointsToString(s.seq(97,98,99)),s.seq("abc"));
 assertEq(str.matches("bla","^bla$"),s.seq(true));
 
 assertEq(str.replace("bla","l","x"),s.seq("bxa"));
-console.log(str.replace("bla","l","x"));
+
 console.log("all tests passed");

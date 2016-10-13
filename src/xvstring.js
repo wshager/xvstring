@@ -1,11 +1,51 @@
 import XRegExp from "xregexp";
 
-import { seq, seqOf, toSeq, isSeq, _first, subsequence, remove, head, tail, count, reverse, insertBefore } from "xvseq";
+import { seq, toSeq, _isSeq, _first, subsequence, remove, head, tail, count, reverse, insertBefore } from "xvseq";
 
 import { element, attribute, text, _isNode } from "xvnode";
 
 import { string } from "xvtype";
 
+function cache(depth){
+	var c = function(){
+		this.depth = depth || 1;
+		this.memo = {};
+	};
+	c.prototype.get = function(...a){
+		if(a.length !== this.depth) throw new Error("Cache 'get' received incorrect number of arguments");
+		var k, target = this.memo;
+		while(a.length) {
+			k = a.shift();
+			target = target[k];
+		}
+		return target;
+	};
+	c.prototype.has = function(...a){
+		if(a.length !== this.depth) throw new Error("Cache 'has' received incorrect number of arguments");
+		var ret;
+		var k, target = this.memo;
+		while(a.length) {
+			k = a.shift();
+			ret = target.hasOwnProperty(k);
+			if(!ret) break;
+			target = target[k];
+		}
+		return ret;
+	};
+	c.prototype.set = function(...a){
+		if(a.length !== this.depth+1) throw new Error("Cache 'set' received incorrect number of arguments");
+		var k, target = this.memo;
+		while(a.length>2) {
+			k = a.shift();
+			if(!target[k]) target[k] = {};
+			target = target[k];
+		}
+		k = a.shift();
+		target[k] = a.shift();
+		return target[k];
+	};
+	return new c();
+}
 
 export function analyzeString($str,$pat) {
 	let pat = XRegExp.cache(_first($pat),"g");
@@ -63,32 +103,23 @@ export function codepointsToString($seq){
 
 export function matches($str,$pat) {
     let pat = XRegExp.cache(_first($pat),"g");
-	let str = _first($str);
-    var _cache;
-    if(!matches._cache) matches._cache = new Map();
-    if(!matches._cache.has(pat)) {
-        _cache = new Map();
-        matches._cache.set(pat,_cache);
-    } else {
-        _cache = matches._cache.get(pat);
-    }
-	str = _isNode(str) ? str.data() : str;
+	let str = _first(string($str)).valueOf();
+	var _cache = matches._cache = matches._cache || cache(2);
+    str = _isNode(str) ? str.data() : str;
 	if(str === undefined) return false;
     var ret;
-    if(!_cache.has(str)){
-        ret = str.match(pat) !== null;
-        _cache.set(str,ret);
+    if(!_cache.has(pat.source,str)){
+        ret = _cache.set(str,pat.source,pat.test(str));
     } else {
-        ret = _cache.get(str);
+        ret = _cache.get(str,pat.source);
     }
     return seq(ret);
 }
 
-// TODO lazy
 export function replace($str,$pat,$rep) {
     let pat = _first($pat).valueOf();
     let rep = _first($rep).valueOf();
-	let str = _first($str).valueOf();
+	let str = _first(string($str)).valueOf();
     var rc = replace.repCache = replace.repCache ? replace.repCache : {};
     //var pc = replace.patCache = replace.patCache ? replace.patCache : {};
     if(!rc[rep]){
@@ -97,42 +128,27 @@ export function replace($str,$pat,$rep) {
     /*if(!pc[pat]){
         pc[pat] = XRegExp.cache(pat,"g");
     }*/
-    var c = replace.cache ? replace.cache : new Map();
-    replace.cache = c;
-    var cc,cpc,ret;
-    if(!c.has(str)) {
-        cc = new Map();
-        c.set(str,cc);
+	var ret;
+    var _cache = replace.cache = replace.cache || cache(3);
+    if(!_cache.has(str,pat,rep)) {
+        ret = _cache.set(str,pat,rep,XRegExp.replace(str,pat,rc[rep]));
     } else {
-        cc = c.get(str);
-    }
-    if(!cc.has(pat)) {
-        cpc = new Map();
-        cc.set(pat,cpc);
-    } else {
-        cpc = cc.get(pat);
-    }
-    if(!cpc.has(rep)) {
-        ret = XRegExp.replace(str,pat,rc[rep]);
-        cpc.set(rep,ret);
-    } else {
-        ret = cpc.get(rep);
+        ret = _cache.get(str,pat,rep);
     }
 	return seq(ret);
 }
 
 
-export function stringLength($_) {
-	return item($_).map(function(_) {
-        return _.length;
-    });
+export function stringLength($str) {
+	let str = _first($str);
+	return seq(str.length);
 }
 
 export function stringJoin($seq,$sep) {
 	let sep = _first($sep);
-	return seqOf(string($seq).join(sep !== undefined ? sep : ""));
+	return seq(string($seq).join(sep !== undefined ? sep : ""));
 }
 
 export function concat(... a){
-    return seqOf(string(toSeq(a)).flatten(true).join(""));
+    return seq(string(toSeq(a)).flatten(true).join(""));
 }
