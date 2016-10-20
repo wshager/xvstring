@@ -46,41 +46,44 @@ function cache(depth){
 }
 
 export function analyzeString($str,$pat) {
-	let pat = XRegExp.cache(_first($pat),"g");
-    let str = _first($str);
-	var ret = [];
+	var str = _first(string($str));
+	let pat = XRegExp(_first($pat),"g");
+    var ret = [];
 	var index = 0;
-	XRegExp.replace(str,pat,function(... a){
-		var match = a.shift();
-		var str = a.pop();
-		var idx = a.pop();
-		// the rest is groups
-		if(idx > index) ret = ret.concat(element("fn:non-match",text(str.substring(index,idx))));
-		index = idx + match.length;
-		if(a.length > 0) {
-			var c = a.reduce(function(pre,_,i){
-				if(_ !== undefined) {
-					return pre.concat(element("fn:group",seq(attribute("nr",i+1+""),text(_))));
-				} else {
-					return pre;
-				}
-			},seq());
-			var e = element("fn:match",c);
-			ret = ret.concat(e);
-		} else if(match) {
-			ret = ret.concat(element(seq("fn:match"),text(match)));
-		}
-	});
-	if(index < str.length) ret.push(element("fn:non-match",text(str.substr(index))));
-	return  element("fn:analyze-string-result",ret);
+	if(str){
+		str = str.toString();
+		XRegExp.replace(str,pat,function(... a){
+			var match = a.shift();
+			var str = a.pop();
+			var idx = a.pop();
+			// the rest is groups
+			if(idx > index) ret = ret.concat(element("fn:non-match",text(str.substring(index,idx))));
+			index = idx + match.length;
+			if(a.length > 0) {
+				var c = a.reduce(function(pre,_,i){
+					if(_ !== undefined) {
+						return pre.concat(element("fn:group",seq(attribute("nr",i+1+""),text(_))));
+					} else {
+						return pre;
+					}
+				},seq());
+				var e = element("fn:match",c);
+				ret = ret.concat(e);
+			} else if(match) {
+				ret = ret.concat(element(seq("fn:match"),text(match)));
+			}
+		});
+		if(index < str.length) ret.push(element("fn:non-match",text(str.substr(index))));
+	}
+	return element("fn:analyze-string-result",ret);
 }
 
 export function tokenize($str,$pat) {
-	let pat = XRegExp.cache(_first($pat),"g");
+	var str = _first(string($str));
+	let pat = XRegExp(_first($pat),"g");
     var ret = seq();
-	let str = _first($str).valueOf();
-    if(str !== "") {
-        str.split(pat).forEach(s => {
+	if(str) {
+        str.toString().split(pat).forEach(s => {
             ret = ret.concat(String(s));
         });
     }
@@ -88,48 +91,55 @@ export function tokenize($str,$pat) {
 }
 
 export function substring($_,$a,$b) {
-	return item($_).map(function(_) { return _.substring(_first($a),_first($b));});
+	return _first(string($_)).substring(_first($a),_first($b));
 }
 
 export function stringToCodepoints($str){
-	return toSeq(_first($str).split("")).map(a => a.codePointAt());
+	return toSeq(_first(string($str)).split("")).map(a => a.codePointAt());
 }
 
 export function codepointsToString($seq){
-	return seq($seq.map(_ => String.fromCodePoint(_)).join(""));
+	return seq($seq.reduce((acc,_) => acc + String.fromCodePoint(_),""));
+	//return seq($seq.map(_ => String.fromCodePoint(_)).join(""));
 }
 
 export function matches($str,$pat) {
-    let pat = XRegExp.cache(_first($pat),"g");
-	let str = _first(string($str)).valueOf();
+    var str = _first(string($str));
+	var pat = _first($pat);
+	if(pat === undefined) return error("xxx");
 	var _cache = matches._cache = matches._cache || cache(2);
     str = _isNode(str) ? str.data() : str;
-	if(str === undefined) return false;
+	if(str === undefined) return seq(false);
+	str = str.toString();
+	pat = pat.toString();
     var ret;
-    if(!_cache.has(pat.source,str)){
-        ret = _cache.set(str,pat.source,pat.test(str));
+    if(!_cache.has(pat,str)){
+        ret = _cache.set(str,pat,XRegExp(pat,"g").test(str));
     } else {
-        ret = _cache.get(str,pat.source);
+        ret = _cache.get(str,pat);
     }
     return seq(ret);
 }
 
 export function replace($str,$pat,$rep) {
-    let pat = _first($pat).valueOf();
-    let rep = _first($rep).valueOf();
-	let str = _first(string($str)).valueOf();
+	var str = _first(string($str)),
+    	pat = _first($pat),
+    	rep = _first($rep);
+	if(pat === undefined || rep === undefined) return error("xxx");
+	if(str === undefined) return seq();
     var rc = replace.repCache = replace.repCache ? replace.repCache : {};
-    //var pc = replace.patCache = replace.patCache ? replace.patCache : {};
     if(!rc[rep]){
-        rc[rep] = rep.replace(/(^|[^\\])\\\$/g,"$$$$").replace(/\\\\\$/g,"\\$$");
+        rc[rep] = rep.toString().replace(/(^|[^\\])\\\$/g,"$$$$").replace(/\\\\\$/g,"\\$$");
     }
+	str = str.toString();
+	pat = pat.toString();
     /*if(!pc[pat]){
         pc[pat] = XRegExp.cache(pat,"g");
     }*/
 	var ret;
     var _cache = replace.cache = replace.cache || cache(3);
     if(!_cache.has(str,pat,rep)) {
-        ret = _cache.set(str,pat,rep,XRegExp.replace(str,XRegExp.cache(pat),rc[rep],"all"));
+        ret = _cache.set(str,pat,rep,XRegExp.replace(str,XRegExp(pat,"g"),rc[rep],"all"));
     } else {
         ret = _cache.get(str,pat,rep);
     }
@@ -138,8 +148,8 @@ export function replace($str,$pat,$rep) {
 
 
 export function stringLength($str) {
-	let str = _first($str);
-	return seq(str.length);
+	let str = _first(string($str));
+	return seq(str !== undefined ? str.toString().length : 0);
 }
 
 export function stringJoin($seq,$sep) {
@@ -148,5 +158,5 @@ export function stringJoin($seq,$sep) {
 }
 
 export function concat(... a){
-    return seq(string(toSeq(a)).flatten(true).join(""));
+    return seq(string(toSeq(a)).join(""));
 }
