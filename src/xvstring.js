@@ -1,10 +1,8 @@
 import XRegExp from "xregexp";
 
-import { seq, toSeq, _isSeq, _first, subsequence, remove, head, tail, count, reverse, insertBefore } from "xvseq";
+import { seq, toSeq, _isSeq, _first, subsequence, remove, head, tail, count, reverse, insertBefore, string } from "xvtype";
 
 import { element, attribute, text, _isNode } from "xvnode";
-
-import { string } from "xvtype";
 
 function cache(depth){
 	var c = function(){
@@ -131,7 +129,7 @@ export function replace($str,$pat,$rep) {
 	var ret;
     var _cache = replace.cache = replace.cache || cache(3);
     if(!_cache.has(str,pat,rep)) {
-        ret = _cache.set(str,pat,rep,XRegExp.replace(str,pat,rc[rep]));
+        ret = _cache.set(str,pat,rep,XRegExp.replace(str,XRegExp.cache(pat),rc[rep],"all"));
     } else {
         ret = _cache.get(str,pat,rep);
     }
