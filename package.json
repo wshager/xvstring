@@ -1,6 +1,6 @@
 {
   "name": "xvstring",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "String functions for XVNode",
   "main": "./lib/xvstring",
   "scripts": {
@@ -19,7 +19,7 @@
   "dependencies": {
     "xregexp": "^3.1.1",
     "xverr": "0.0.4",
-    "xvnode": "^0.1.2",
-    "xvtype": "0.0.9"
+    "xvnode": "^0.1.3",
+    "xvtype": "^0.1.1"
   }
 }
