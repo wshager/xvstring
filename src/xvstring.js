@@ -24,7 +24,7 @@ function cache(depth){
 		var k, target = this.memo;
 		while(a.length) {
 			k = a.shift();
-			ret = target.hasOwnProperty(k);
+			ret = k in target;
 			if(!ret) break;
 			target = target[k];
 		}
@@ -60,13 +60,19 @@ export function analyzeString($str,$pat) {
 			if(idx > index) ret = ret.concat(element("fn:non-match",text(str.substring(index,idx))));
 			index = idx + match.length;
 			if(a.length > 0) {
-				var c = a.reduce(function(pre,_,i){
-					if(_ !== undefined) {
-						return pre.concat(element("fn:group",seq(attribute("nr",i+1+""),text(_))));
-					} else {
-						return pre;
+				var c = [];
+				a.forEach(function (_, i) {
+					if (_ !== undefined) {
+						// nest optional groups that are empty
+						// TODO nested groups
+						if(_ !== "") {
+							c.push(element("fn:group",seq(attribute("nr",Number(i+1)),text(_))));
+						} else {
+							var last = c.length ? c[c.length-1] : c;
+							last.push(element("fn:group",seq(attribute("nr",Number(i+1)))));
+						}
 					}
-				},seq());
+				});
 				var e = element("fn:match",c);
 				ret = ret.concat(e);
 			} else if(match) {
