@@ -1,6 +1,6 @@
 {
   "name": "xvstring",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "String functions for XVNode",
   "main": "./lib/xvstring",
   "scripts": {
@@ -20,10 +20,10 @@
     "xregexp": "^3.1.1",
     "xverr": "0.0.4",
     "xvnode": "^0.1.4",
-    "xvtype": "^0.1.2"
+    "xvtype": "^0.1.4"
   },
   "devDependencies": {
-      "babel-cli": "^6.18.0",
-      "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0"
+    "babel-cli": "^6.18.0",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0"
   }
 }
