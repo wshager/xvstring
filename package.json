@@ -18,9 +18,9 @@
   "homepage": "https://github.com/wshager/xvstring#readme",
   "dependencies": {
     "xregexp": "^3.1.1",
-    "xverr": "0.0.4",
-    "xvnode": "^0.1.4",
-    "xvtype": "^0.1.4"
+    "xverr": "*",
+    "xvnode": "*",
+    "xvtype": "*"
   },
   "devDependencies": {
     "babel-cli": "^6.18.0",
