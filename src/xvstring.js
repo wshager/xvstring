@@ -96,8 +96,12 @@ export function tokenize($str,$pat) {
     return ret;
 }
 
-export function substring($_,$a,$b) {
-	return _first(string($_)).substring(_first($a),_first($b));
+export function substring($_,$s,$l) {
+	var _ = _first(string($_)),
+		s = Math.round(_first($s)) - 1;
+	if(!$l) return _.substring(s);
+	var l = _first($l);
+	return _.substring(s,s + Math.round(l));
 }
 
 export function stringToCodepoints($str){
@@ -107,6 +111,14 @@ export function stringToCodepoints($str){
 export function codepointsToString($seq){
 	return seq($seq.reduce((acc,_) => acc + String.fromCodePoint(_),""));
 	//return seq($seq.map(_ => String.fromCodePoint(_)).join(""));
+}
+
+export function upperCase($str) {
+	return seq(_first($str).toUpperCase());
+}
+
+export function lowerCase($str) {
+	return seq(_first($str).toLowerCase());
 }
 
 export function matches($str,$pat) {

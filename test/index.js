@@ -5,7 +5,8 @@ var s = require("xvseq");
 const assert = require('assert');
 
 function assertEq(a,b){
-	assert.deepStrictEqual(a.toJS(),b.toJS(),`${a} is not equal to ${b}`);
+	console.log(a)
+	assert.deepStrictEqual(a.first(),b.first(),`${a} is not equal to ${b}`);
 }
 
 assertEq(str.stringJoin(
@@ -22,5 +23,8 @@ assertEq(str.codepointsToString(s.seq(97,98,99)),s.seq("abc"));
 assertEq(str.matches("bla","^bla$"),s.seq(true));
 
 assertEq(str.replace("bla","l","x"),s.seq("bxa"));
+
+assertEq(str.upperCase("bla"),s.seq("BLA"));
+
 
 console.log("all tests passed");
