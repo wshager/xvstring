@@ -126,6 +126,10 @@ export function lowerCase($str) {
 	return seq(_first($str).toLowerCase());
 }
 
+export function normalizeSpace($str) {
+	return seq(_first($str).replace(/^[\x20\x9\xD\xA]+|[\x20\x9\xD\xA]+$/g,"").replace(/[\x20\x9\xD\xA]+/g," "));
+}
+
 export function matches($str,$pat) {
     var str = _first(string($str));
 	var pat = _first($pat);
@@ -170,9 +174,11 @@ export function replace($str,$pat,$rep) {
 }
 
 
+const regexAstralSymbols = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g;
+
 export function stringLength($str) {
 	let str = _first(string($str));
-	return seq(str !== undefined ? str.toString().length : 0);
+	return seq(str !== undefined ? str.replace(regexAstralSymbols,"_").toString().length : 0);
 }
 
 export function stringJoin($seq,$sep) {
@@ -182,4 +188,10 @@ export function stringJoin($seq,$sep) {
 
 export function concat(... a){
     return seq(string(toSeq(a)).join(""));
+}
+
+export function normalizeUnicode($str,$form) {
+	var str = _first($str);
+	var form = _first($form);
+	return !str ? seq() : seq(!form ? str.normalize() : str.normalize(form.toUpperCase()));
 }
