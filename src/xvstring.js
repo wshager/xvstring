@@ -105,7 +105,12 @@ export function substring($_,$s,$l) {
 }
 
 export function stringToCodepoints($str){
-	return toSeq(_first(string($str)).split("")).map(a => a.codePointAt());
+	var str = _first($str);
+	var ret = [];
+	for(var i=0;i<str.length;i++){
+		ret[i] = str.codePointAt(i);
+	}
+	return toSeq(ret);
 }
 
 export function codepointsToString($seq){
